@@ -17,6 +17,8 @@
 #include <errno.h>
 
 #define PORT     4240
-#define MAXLINE 1024
+#define MAXLINE 512
+void clearBuffer(char* buffer);
+int recieveFile(char* buffer, int MAXSIZE, FILE *fptr);
 
 #endif //PEX1_PEX1_H
