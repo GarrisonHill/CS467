@@ -8,9 +8,12 @@
  */
 
 #include "PEX1Server.h"
-
+#define LISTMESSAGE  "LIST_REQUEST"
 int main(){
     printf("Waiting For Connection\n");
+    char *LISTREPLY = "LIST_REPLY\nBilly Joel - We Didn't Start the Fire.mp3\nSuzanne Vega - Toms Diner.mp3\n\0";
+    char *STARTSTREAMBILLY = "START_STREAM\nBilly Joel - We Didn't Start the Fire.mp3";
+    char *STARTSTREAMVEGA = "START_STREAM\nSuzanne Vega - Toms Diner.mp3";
 
     int socketfd;  //Socket descriptor, like a file-handle
     struct sockaddr_in srvaddr, cliaddr; //Stores IP address, address family (ipv4), and port
@@ -41,20 +44,59 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    // Receive message from client
-    int len=sizeof(cliaddr), n; //must initialize len to size of buffer
-    if((n = recvfrom(socketfd, (char *)buffer, MAXLINE, 0, ( struct sockaddr *) &cliaddr, &len))<0)
-    {
-        perror("ERROR");
-        printf("Errno: %d. ",errno);
-        exit(EXIT_FAILURE);
-    }
-    buffer[n] = '\0';  //terminate message
-    printf("Client : %s\n", buffer);
+    while(1){
+        // Receive message from client
+        int len=sizeof(cliaddr), n; //must initialize len to size of buffer
+        if((n = recvfrom(socketfd, (char *)buffer, MAXLINE, 0, ( struct sockaddr *) &cliaddr, &len))<0)
+        {
+            perror("ERROR");
+            printf("Errno: %d. ",errno);
+            exit(EXIT_FAILURE);
+        }
+        buffer[n] = '\0';  //terminate message
+        printf("Client :%s\n", buffer);
+        if(strcmp(buffer,LISTMESSAGE) == 0){
+            sendto(socketfd, LISTREPLY, strlen(LISTREPLY), 0, (const struct sockaddr *) &cliaddr, len);
+            printf("Reply Sent\n%s", LISTREPLY);
+        }
 
-    // Respond to client
-    sendto(socketfd, (const char *)hello, strlen(hello), 0, (const struct sockaddr *) &cliaddr, len);
-    printf("Hello message sent.\n");
+        if(strcmp(buffer, STARTSTREAMBILLY) == 0){
+            char* fileInfo = malloc(sizeof(fileInfo));
+            fileRead("./Billy Joel - We Didn't Start the Fire.mp3", fileInfo);
+            printf("%s", fileInfo);
+        }
+        if(strcmp(buffer, STARTSTREAMVEGA) == 0){
+
+        }
+
+//        // Respond to client
+//        sendto(socketfd, (const char *)hello, strlen(hello), 0, (const struct sockaddr *) &cliaddr, len);
+//        printf("Hello message sent.\n");
+
+    }
     close(socketfd); // Close socket
     return 0;
+}
+
+int fileRead(char* FILENAME, char* fileInfo){
+    int BUFFER_SIZE = 512;
+    FILE *fptr;
+
+    fptr = fopen(FILENAME, "r");
+    if (fptr == NULL) {
+        printf("Could not open file\n");
+    }
+    char buffer[BUFFER_SIZE];
+    while (fscanf(fptr, "%s", buffer) == 1)
+    {
+        strcpy(fileInfo, buffer);
+        if (feof(fptr))
+        {
+            break;
+        }
+    }
+
+
+
+
 }

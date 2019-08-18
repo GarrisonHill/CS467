@@ -9,6 +9,9 @@
 
 #include "PEX1.h"
 
+//TODO Input Validation on the 1, 2, 3, choices
+//TODO Timeout Process for server not responding
+
 int main() {
     int sockfd; //Socket descriptor, like a file-handle
     char buffer[MAXLINE]; //buffer to store message from server

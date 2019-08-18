@@ -16,5 +16,6 @@
 
 #define PORT 4240
 #define MAXLINE 1024
+int fileRead(char* FILENAME, char* fileInfo);
 
 #endif //PEX1_PEX1_H
