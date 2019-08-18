@@ -59,7 +59,6 @@ int main() {
             close(sockfd);
         }
 
-        //TODO Fix COMMAND_ERROR returns from the socket and break
         if (input == 2) {
             char START_STREAM[150] = "START_STREAM\n";
             // Creating socket file descriptor
@@ -101,9 +100,12 @@ int main() {
             //makes a file pointer called fptr
             FILE *fptr;
             char fileName[100];
+            //Allows for a file path
             char path[100] = "./";
             strcat(path, songInput);
+
             strcpy(fileName, songInput);
+
             //opens or creates a file for reading or writing
             fptr = fopen(fileName, "a+");
             /*tells the server that we want to connect on socket sockfd, gives it the message to be sent and the length of
@@ -122,16 +124,22 @@ int main() {
                     exit(EXIT_FAILURE);
                     break;
                 }
+                //13 characters is the length of the COMMAND_ERROR returned from a server
+                if(n == 13){
+                    printf("That song does not exist or the server has encountered an error.\n");
+                    break;
+                }
                 //If there is nothing left to read from the server break
                 char * tempBuffer = malloc(sizeof(char *));
-                char * cmdBuffer = malloc(sizeof(char *));
-                memcpy(cmdBuffer, buffer, 13);
 
+                //copies the first 11 chars to a temp buffer to compare if it indicates the stream is done
                 memcpy(tempBuffer, buffer, 11);
-                char* STRING_DONE = "STREAM_DONE";
-                char* COMMAND_ERROR = "COMMAND ERROR";
 
-                if(strcmp(tempBuffer, STRING_DONE) == 0 || strcmp(cmdBuffer, COMMAND_ERROR) == 0){
+                char* STRING_DONE = "STREAM_DONE";
+
+                if(strcmp(tempBuffer, STRING_DONE) == 0){
+                    printf("Transmission Finished.\n");
+                    free(tempBuffer);
                     break;
                 }
                 //truncate the string so that
@@ -143,6 +151,8 @@ int main() {
                 }
 
             }
+            //Closes the file and clears each section
+
             fclose(fptr);
             memset(songInput, '\0', MAXLINE);
             memset(buffer, '\0', MAXLINE);
