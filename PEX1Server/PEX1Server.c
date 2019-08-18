@@ -7,6 +7,7 @@
  * ===========================================================
  */
 
+#include <w32api/rpcndr.h>
 #include "PEX1Server.h"
 #define LISTMESSAGE  "LIST_REQUEST"
 int main(){
@@ -61,42 +62,62 @@ int main(){
         }
 
         if(strcmp(buffer, STARTSTREAMBILLY) == 0){
-            char* fileInfo = malloc(sizeof(fileInfo));
-            fileRead("./Billy Joel - We Didn't Start the Fire.mp3", fileInfo);
-            printf("%s", fileInfo);
+            char* FILENAME = "C:/Users/lionc/CLionProjects/CS467/cmake-build-debug/Billy Joel - We Didn't Start the Fire.mp3";
+            int numbytes = numBytes(FILENAME);
+            if(numbytes == -1){
+                break;
+            }
+            char* fileInfo = (char*) calloc(numbytes, sizeof(char));
+            fileRead(FILENAME, fileInfo, numbytes);
+            printf("File Read\n");
         }
         if(strcmp(buffer, STARTSTREAMVEGA) == 0){
 
         }
 
-//        // Respond to client
-//        sendto(socketfd, (const char *)hello, strlen(hello), 0, (const struct sockaddr *) &cliaddr, len);
-//        printf("Hello message sent.\n");
 
     }
     close(socketfd); // Close socket
     return 0;
 }
 
-int fileRead(char* FILENAME, char* fileInfo){
-    int BUFFER_SIZE = 512;
+int fileRead(char* FILENAME, char* fileInfo, int numbytes){
     FILE *fptr;
+    char *buffer;
 
     fptr = fopen(FILENAME, "r");
     if (fptr == NULL) {
         printf("Could not open file\n");
     }
-    char buffer[BUFFER_SIZE];
-    while (fscanf(fptr, "%s", buffer) == 1)
-    {
-        strcpy(fileInfo, buffer);
-        if (feof(fptr))
-        {
-            break;
-        }
+
+    char c;
+    do{
+        char c;
     }
 
-
-
-
+//    fread(buffer, sizeof(char), numbytes, fptr);
+//    fclose(fptr);
+//    for (int i = 0; i < numbytes; ++i) {
+//        fileInfo[i] = buffer[i];
+//        printf("%c", buffer[i]);
+//    }
+//    free(buffer);
+    return 1;
 }
+
+int numBytes(char* FILENAME){
+    FILE *fptr;
+    fptr = fopen(FILENAME, "r");
+    if (fptr == NULL) {
+        printf("Could not open file\n");
+        return -1;
+    }
+    fseek(fptr, 0L, SEEK_END);
+    int numbytes = ftell(fptr);
+    printf("%d", numbytes);
+    fseek(fptr, 0L, SEEK_SET);
+    return numbytes;
+}
+
+//TODO Document this if it works
+//http://www.fundza.com/c4serious/fileIO_reading_all/
