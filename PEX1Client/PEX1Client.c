@@ -119,6 +119,7 @@ int main() {
 
             // Receive message from client
             while (1) {
+                //TODO Timeout
                 memset(buffer, '\0', MAXLINE);
                 //recvfrom returns the number of characters in the message from the server
                 if ((n = recvfrom(sockfd, (char *) buffer, MAXLINE, 0, (struct sockaddr *) &servaddr, &len)) < 0) {
