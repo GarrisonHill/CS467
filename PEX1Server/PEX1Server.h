@@ -1,6 +1,12 @@
-//
-// Created by David on 8/17/2019.
-//
+/** PEX1Server.h
+ * ===========================================================
+ * Name: CS467, Fall 2019
+ * Project: PEX1_Server
+ * Purpose: Implementation of Server Server Music Streaming
+ *          Communication
+ * Of note: Dr. Coffman said to never include a name so
+ * ===========================================================
+ */
 
 #ifndef PEX1_PEX1_H
 #define PEX1_PEX1_H
@@ -16,7 +22,7 @@
 
 #define PORT 4240
 #define MAXLINE 1024
-int* fileRead(char* FILENAME, char* fileInfo, int numbytes);
+int* fileRead(char* FILENAME, int numbytes);
 int numBytes(char* FILENAME);
 
 #endif //PEX1_PEX1_H

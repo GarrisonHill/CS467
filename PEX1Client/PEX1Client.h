@@ -1,6 +1,12 @@
-//
-// Created by David on 8/16/2019.
-//
+/** PEX1Client.h
+ * ===========================================================
+ * Name: CS468, Fall 2019
+ * Project: PEX1_Client
+ * Purpose: Implementation of Client Server Music Streaming
+ *          Communication
+ * Of note: Dr. Coffman said to never include a name so
+ * ===========================================================
+ */
 
 #ifndef PEX1_PEX1_H
 #define PEX1_PEX1_H

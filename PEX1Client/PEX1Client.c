@@ -1,9 +1,10 @@
 /** PEX1Client.c
  * ===========================================================
  * Name: CS468, Fall 2019
- * Project: PEX1
+ * Project: PEX1_Client
  * Purpose: Implementation of Client Server Music Streaming
  *          Communication
+ * Of note: Dr. Coffman said to never include a name so
  * ===========================================================
  */
 
@@ -102,12 +103,12 @@ int main() {
             printf("Waiting For Response.\n");
             //makes a file pointer called fptr
             FILE *fptr;
-            char fileName[100] = "test.mp3";
+            char fileName[100];
             //Allows for a file path
             char path[100] = "./";
             strcat(path, songInput);
 
-//            strcpy(fileName, songInput);
+            strcpy(fileName, songInput);
 
 
             //opens or creates a file for reading or writing
