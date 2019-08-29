@@ -7,7 +7,7 @@
  * ===========================================================
  */
 
-#include "PEX1.h"
+#include "PEX1Client.h"
 
 //TODO Input Validation on the 1, 2, 3, choices
 //TODO Timeout Process for server not responding
@@ -102,12 +102,13 @@ int main() {
             printf("Waiting For Response.\n");
             //makes a file pointer called fptr
             FILE *fptr;
-            char fileName[100];
+            char fileName[100] = "test.mp3";
             //Allows for a file path
             char path[100] = "./";
             strcat(path, songInput);
 
-            strcpy(fileName, songInput);
+//            strcpy(fileName, songInput);
+
 
             //opens or creates a file for reading or writing
             fptr = fopen(fileName, "a+");

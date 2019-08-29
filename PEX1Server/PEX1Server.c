@@ -78,11 +78,10 @@ int main() {
                 //If a character is 0xff then check to see if the next is 0xfb
                 if (fileBuffer[counter] == 0xff) {
                     counter++;
-                    printf("The counter is at %d\n", counter);
                     if (fileBuffer[counter] == 0xfb) {
                         //if 0xfb calculate the frame to
                         counter++;
-                        printf("%d", fileBuffer[counter]);
+                        printf("%d\n", fileBuffer[counter]);
                         int bitrate = (fileBuffer[counter] >> 4) & 15;
                         printf("Bitrate %d\n", bitrate);
                         int samplerate = (fileBuffer[counter] >> 2) & 3;
@@ -91,44 +90,107 @@ int main() {
                         printf("Padding Bit %d\n", padding);
 
                         int frameSize = 0;
-                        if(padding == 0){
+                        if (padding == 0) {
                             frameSize = (144 * bitrate_lookup[bitrate] * 1000) / samplerate_lookup[samplerate];
-                        }
-                        else{
-                            frameSize = (1+(144 * bitrate_lookup[bitrate] * 1000) / samplerate_lookup[samplerate]);
+                        } else {
+                            frameSize = (1 + (144 * bitrate_lookup[bitrate] * 1000) / samplerate_lookup[samplerate]);
                         }
 
-                        char* tempBuffer = calloc(frameSize + 12, sizeof(char));
+                        char *tempBuffer = calloc(frameSize + 12, sizeof(char));
                         strcpy(tempBuffer, STREAMDATA);
-                        for (int i = 12; i < frameSize+12; ++i) {
-                            tempBuffer[i] = fileBuffer[counter - 2];
+                        counter = counter - 2;
+                        for (int i = 12; i < frameSize + 12; i++) {
+                            tempBuffer[i] = fileBuffer[counter];
                             counter++;
                         }
 
                         printf("Sending %d size of %d\n", frameNumber, frameSize);
-                        sendto(socketfd, tempBuffer, frameSize+12, 0, (const struct sockaddr *) &cliaddr, len);
+                        sendto(socketfd, tempBuffer, frameSize + 12, 0, (const struct sockaddr *) &cliaddr, len);
                         frameNumber++;
                         usleep(1);
+                        printf("The Counter is %d\n", counter);
+
 
                     } else {
                         //rewind the counter to see if the next one is 0xfb
                         counter++;
-                        printf("The counter is at %d\n", counter);
 
                     }
                 } else {
                     //advance the counter cause its neither
                     counter++;
-                    printf("The counter is at %d\n", counter);
                 }
             }
+            char *STREAMDONE = "STREAM_DONE\n";
+            sendto(socketfd, STREAMDONE, 13, 0, (const struct sockaddr *) &cliaddr, len);
             printf("File Read\n");
         }
+
         if (strcmp(buffer, STARTSTREAMVEGA) == 0) {
+            char *FILENAME = "C:/Users/lionc/CLionProjects/CS467/cmake-build-debug/Suzanne Vega - Toms Diner.mp3";
+            int numbytes = numBytes(FILENAME);
+            if (numbytes == -1) {
+                break;
+            }
+            int samplerate_lookup[] = {44100, 48000, 32000, -1};
+            int bitrate_lookup[] = {0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, -1};
+            char *fileInfo = (char *) calloc(numbytes, sizeof(char));
+            int *fileBuffer = fileRead(FILENAME, fileInfo, numbytes);
 
+            int counter = 0;
+            int frameNumber = 1;
+            while (counter != numbytes) {
+                //If a character is 0xff then check to see if the next is 0xfb
+                if (fileBuffer[counter] == 0xff) {
+                    counter++;
+                    if (fileBuffer[counter] == 0xfb) {
+                        //if 0xfb calculate the frame to
+                        counter++;
+                        printf("%d\n", fileBuffer[counter]);
+                        int bitrate = (fileBuffer[counter] >> 4) & 15;
+                        printf("Bitrate %d\n", bitrate);
+                        int samplerate = (fileBuffer[counter] >> 2) & 3;
+                        printf("Sample Rate %d\n", samplerate);
+                        int padding = (fileBuffer[counter] >> 1) & 1;
+                        printf("Padding Bit %d\n", padding);
+
+                        int frameSize = 0;
+                        if (padding == 0) {
+                            frameSize = (144 * bitrate_lookup[bitrate] * 1000) / samplerate_lookup[samplerate];
+                        } else {
+                            frameSize = (1 + (144 * bitrate_lookup[bitrate] * 1000) / samplerate_lookup[samplerate]);
+                        }
+
+                        char *tempBuffer = calloc(frameSize + 12, sizeof(char));
+                        strcpy(tempBuffer, STREAMDATA);
+                        counter = counter - 2;
+                        for (int i = 12; i < frameSize + 12; i++) {
+                            tempBuffer[i] = fileBuffer[counter];
+                            counter++;
+                        }
+
+                        printf("Sending %d size of %d\n", frameNumber, frameSize);
+                        sendto(socketfd, tempBuffer, frameSize + 12, 0, (const struct sockaddr *) &cliaddr, len);
+                        frameNumber++;
+                        usleep(1);
+                        printf("The Counter is %d\n", counter);
+
+
+                    } else {
+                        //rewind the counter to see if the next one is 0xfb
+                        counter++;
+
+                    }
+                } else {
+                    //advance the counter cause its neither
+                    counter++;
+                }
+            }
+            char *STREAMDONE = "STREAM_DONE\n";
+            sendto(socketfd, STREAMDONE, 13, 0, (const struct sockaddr *) &cliaddr, len);
+            printf("File Read\n");
         }
-
-
+        printf("Waiting For Command.\n");
     }
     close(socketfd); // Close socket
     return 0;
