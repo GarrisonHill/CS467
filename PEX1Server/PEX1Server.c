@@ -82,6 +82,7 @@ int main() {
                     if (fileBuffer[counter] == 0xfb) {
                         //if 0xfb calculate the frame to
                         counter++;
+                        printf("%d", fileBuffer[counter]);
                         int bitrate = (fileBuffer[counter] >> 4) & 15;
                         printf("Bitrate %d\n", bitrate);
                         int samplerate = (fileBuffer[counter] >> 2) & 3;
@@ -107,6 +108,7 @@ int main() {
                         printf("Sending %d size of %d\n", frameNumber, frameSize);
                         sendto(socketfd, tempBuffer, frameSize+12, 0, (const struct sockaddr *) &cliaddr, len);
                         frameNumber++;
+                        usleep(1);
 
                     } else {
                         //rewind the counter to see if the next one is 0xfb
