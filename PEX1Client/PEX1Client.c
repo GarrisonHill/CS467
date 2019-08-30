@@ -8,13 +8,15 @@
  * ===========================================================
  */
 
+#include <w32api/minwindef.h>
 #include "PEX1Client.h"
 
-//TODO Input Validation on the 1, 2, 3, choices
-//TODO Timeout Process for server not responding
+#define timeout_time 5
+
 
 int main() {
     int sockfd; //Socket descriptor, like a file-handle
+
     char buffer[MAXLINE]; //buffer to store message from server
 
     char *LIST_REQUEST = "LIST_REQUEST"; //message to send to server
@@ -22,14 +24,25 @@ int main() {
 //    char START_STREAM[150] = "START_STREAM\nBilly Joel - We Didn't Start the Fire.mp3";
     struct sockaddr_in servaddr;  //we don't bind to a socket to send UDP traffic, so we only need to configure server address
     printf("Please enter one of the following commands: \n");
-    int input = 0;
+    //declares the input variable of the string so that it doesn't die
+    char *inputS;
+    //throwaway pointer
+    char *ptr;
+    //the long int that is validated with the choices
+    long input;
+    //declares that the socket is closed
     bool socketOpen = false;
     do {
+        //clear any input previously sent in
         fflush(stdout);
+        //list out for the users the choices
         printf("'1' = List Songs\n");
         printf("'2' = Download Song\n");
         printf("'3' = Exit\n");
-        scanf("%d", &input);
+        //take user input in the form of a string
+        scanf("%s", inputS);
+        //convert the string to an int for comparison
+        input = strtol(inputS, &ptr, 10);
         //Program opens socket and receives communication from server for songs stored on the server
         if (input == 1) {
 
@@ -38,7 +51,8 @@ int main() {
                 perror("socket creation failed");
                 exit(EXIT_FAILURE);
             }
-//            socketOpen = true;
+            //declares that the socket is open
+            socketOpen = true;
 
             // Filling server information
             servaddr.sin_family = AF_INET; //IPv4
@@ -59,18 +73,25 @@ int main() {
                 exit(EXIT_FAILURE);
             }
             buffer[n] = '\0'; //terminate message
+            //display message received from the server
             printf("Server : %s\n", buffer);
+            //close the socket to reestablish connection later if needed
             close(sockfd);
         }
 
+        //if the user wants to select a song then enter this
         if (input == 2) {
+
+            //declares a string to send to the server to start a song stream
             char START_STREAM[150] = "START_STREAM\n";
-            // Creating socket file descriptor
+            // Creating socket file descriptor and binds the socket
             if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
                 perror("socket creation failed");
                 exit(EXIT_FAILURE);
             }
             socketOpen = true;
+            char *timeout = (char *) (timeout_time * 1000);
+            setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char *) &timeout, sizeof(timeout));
 
             //Tells the client side which IP version it shoudl run off of
             servaddr.sin_family = AF_INET; //IPv4
@@ -103,11 +124,13 @@ int main() {
             printf("Waiting For Response.\n");
             //makes a file pointer called fptr
             FILE *fptr;
+            //declares space where the fileName will go
             char fileName[100];
             //Allows for a file path
             char path[100] = "./";
+            //place the songInput with a relative path
             strcat(path, songInput);
-
+            //place the songInput as a fileName to be sent
             strcpy(fileName, songInput);
 
 
@@ -130,40 +153,40 @@ int main() {
                     exit(EXIT_FAILURE);
                     break;
                 }
-                //13 characters is the length of the COMMAND_ERROR returned from a server
-                if(n == 13){
+                //15 characters is the length of the COMMAND_ERROR\n returned from a server
+                if (n == 15) {
                     printf("That song does not exist or the server has encountered an error.\n");
                     break;
                 }
                 //If there is nothing left to read from the server break
-                char * tempBuffer = malloc(sizeof(char *));
+                char *tempBuffer = malloc(sizeof(char *));
 
                 //copies the first 11 chars to a temp buffer to compare if it indicates the stream is done
                 memcpy(tempBuffer, buffer, 11);
 
-                char* STRING_DONE = "STREAM_DONE";
-
-                if(strcmp(tempBuffer, STRING_DONE) == 0){
+                //STRING_DONE is the command sent from the server to show that the server is done sending messages
+                char *STRING_DONE = "STREAM_DONE";
+                //if the server hasn't sent stream done write to a file
+                if (strcmp(tempBuffer, STRING_DONE) != 0) {
+                    //truncate the string so that
+                    char *buffRemoved = buffer + 12;
+                    puts(buffRemoved);
+                    //print each character in the buffer, printing strings could cause errors?
+                    for (int j = 0; j < n - 12; ++j) {
+                        fprintf(fptr, "%c", buffRemoved[j]);
+                    }
+                } else {
                     printf("Transmission Finished.\n");
                     free(tempBuffer);
                     break;
                 }
-                //truncate the string so that
-                char *buffRemoved = buffer + 12;
-                puts(buffRemoved);
-                //print each character in the buffer, printing strings could cause errors?
-                for (int i = 0; i < n - 12; ++i) {
-                    fprintf(fptr, "%c", buffRemoved[i]);
-                }
 
             }
-            //Closes the file and clears each section
-
+            //Closes the file and free each section
             fclose(fptr);
-            memset(songInput, '\0', MAXLINE);
-            memset(buffer, '\0', MAXLINE);
-            memset(fileName, '\0', MAXLINE);
-
+            free(fileName);
+            free(buffer);
+            free(songInput);
         }
 
 
