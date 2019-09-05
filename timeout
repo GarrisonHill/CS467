@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/types.h>
+
+#define PAUSE 5
+
+int timeout() {
+    //intializing variables
+    char input[20] = {0};
+    fd_set input_set;
+    struct timeval timeout;
+    int temp = 0;
+    int read_bytes = 0;
+
+    //clear FD set
+    FD_ZERO(&input_set);
+
+    //input descripter
+    FD_SET(0, &input_set);
+
+    //setting the waiting timer
+    timeout.tv_sec = PAUSE;
+    timeout.tv_usec = 0;
+
+    //prompting user
+    printf("Enter Username: (in %d seconds)\n", PAUSE);
+
+    //Watching input for activity
+    temp = select(1, &input_set, NULL, NULL, &timeout);
+
+
+    if (temp == -1) {
+        //input problem
+        printf("Unable to read your input\n");
+        return -1;
+    }
+
+    //reads the input coming from the keyboard if temp is triggered
+    if (temp == 1) {
+        read_bytes = read(0, input, 19);
+        if (input[read_bytes - 1] == '\n') {
+            --read_bytes;
+            input[read_bytes] = '\0';
+        }
+        if (read_bytes == 0) {
+            printf("You only hit enter\n");
+        }
+    } else {
+        printf("Timing out \n");
+        return 0;
+    }
+
+
+}
